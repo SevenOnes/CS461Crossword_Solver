@@ -12,7 +12,7 @@ public class Grid extends JInternalFrame {
 
 	// Constructor
 	public Grid() {
-		setTitle("                                               HOLMES                                              ");
+		setTitle("                                              HOLMES                                              ");
 		// Sets up the internal frame
 		setBorder(null);
 		getContentPane().setForeground(Color.WHITE);
@@ -33,6 +33,15 @@ public class Grid extends JInternalFrame {
 				grid[i][j] = block;
 			}
 		}
+		grid[0][0].setName("1");
+		grid[0][1].setName("2");
+		grid[0][2].setName("3");
+		grid[0][3].setName("4");
+		grid[0][4].setName("5");
+		grid[1][0].setName("6");
+		grid[2][0].setName("7");
+		grid[3][0].setName("8");
+		grid[4][0].setName("9");
 	}
 	
 	// Methods
