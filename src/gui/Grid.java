@@ -12,6 +12,7 @@ public class Grid extends JInternalFrame {
 
 	// Constructor
 	public Grid() {
+		setTitle("                                               HOLMES                                              ");
 		// Sets up the internal frame
 		setBorder(null);
 		getContentPane().setForeground(Color.WHITE);
