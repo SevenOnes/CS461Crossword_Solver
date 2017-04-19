@@ -47,6 +47,7 @@ public class GridBlock extends JPanel {
 	public void setValid(boolean value)
 	{
 		valid = value;
+		repaint();
 	}
 
 	public boolean getValid()
