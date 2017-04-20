@@ -8,10 +8,19 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
+
+//import com.jaunt.Document;
+//import com.jaunt.Element;
+//import com.jaunt.Elements;
+
 import org.jsoup.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+//import com.jaunt.JauntException;
+//import com.jaunt.NotFound;
+//import com.jaunt.UserAgent;
 
 public class AppWindow {
 
@@ -19,7 +28,7 @@ public class AppWindow {
 	private GridGUI   gridGUI;
 	private HintsGUI  hintsGUI;
 	private JFrame frame;
-	private Hint hints[];	// lower half contains down hints, the other contains across hints.
+	private Hint hints[];	// lower half contains Down hints, the other contains Across hints.
 
 	/**
 	 * Launch the application.
@@ -133,7 +142,6 @@ public class AppWindow {
 		try {
 			doc = Jsoup.connect(URL).get();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.println("URL Connection Failed!");
 		}
 
@@ -142,7 +150,7 @@ public class AppWindow {
 		int hintsCount = 5;
 		if(hints == null)
 			hints = new Hint[10];
-		
+
 		for (Element element : clueList) 
 		{
 			Elements subClueList = element.getAllElements();
@@ -159,32 +167,51 @@ public class AppWindow {
 			}
 		}
 		hintsGUI.setHints(hints);	// update GUI with NYT hints
-		
+
 		// Testing hints on console
-//		for(int i = 0;i< hints.length;i++)
-//		{
-//			System.out.println(hints[i].getValue() + ": " + hints[i].getText());
-//		}
+		//		for(int i = 0;i< hints.length;i++)
+		//		{
+		//			System.out.println(hints[i].getValue() + ": " + hints[i].getText());
+		//		}
 
 		// Forming the Grid
+		System.out.println("grid forming start");
 		boolean gridConfig[][] = new boolean[5][5];
-		Elements gridConfigNYT = doc.getElementsByClass("flex-cell");
+		Elements gridConfigNYT = doc.getElementsByClass("flex-cell ");
+		
+//		Elements test = gridConfigNYT.get(1).children();
+//		System.out.println(test.size());
+		
 		int countGridNYT = 0;
 		for(int i = 0; i < 5; i++)
 		{
 			for(int j = 0; j < 5; j++)
 			{
-				if(gridConfigNYT.get(countGridNYT).className().contains("black"))
+				Element flexCell = gridConfigNYT.get(countGridNYT); // Getting flex-cell
+
+				// Checking grid color
+				if(flexCell.className().contains("black"))
 					gridConfig[i][j] = false;
 				else
 					gridConfig[i][j] = true;
-//				System.out.println(gridConfigNYT.get(countGridNYT).data());
+
+				// Checking if contains clue number
+				Elements clueNo = flexCell.getElementsByClass("clue-number");
+												
+//				Elements test = flexCell.children();
+//				System.out.println(test.size());
+				
+				if(clueNo.size() > 0)
+				{
+					System.out.println(countGridNYT + ": clue-number found");
+				}				
+
 				countGridNYT++;
 			}
 		}
 		gridGUI.setGridConfig(gridConfig);
-		
-//		Elements test = doc.getElementsByClass("flex-table");
-//		System.out.println(test.toString());
+		System.out.println("grid forming end");
+		//		Elements test = doc.getElementsByClass("flex-table");
+		//		System.out.println(test.toString());
 	}
 }
