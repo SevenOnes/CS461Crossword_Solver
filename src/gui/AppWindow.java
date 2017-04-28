@@ -6,21 +6,14 @@ import javax.swing.JFrame;
 import javax.swing.JButton;
 import java.awt.Color;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.util.List;
 import java.awt.event.ActionEvent;
-
-//import com.jaunt.Document;
-//import com.jaunt.Element;
-//import com.jaunt.Elements;
-
-import org.jsoup.*;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-//import com.jaunt.JauntException;
-//import com.jaunt.NotFound;
-//import com.jaunt.UserAgent;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class AppWindow {
 
@@ -29,6 +22,8 @@ public class AppWindow {
 	private HintsGUI  hintsGUI;
 	private JFrame frame;
 	private Hint hints[];	// lower half contains Down hints, the other contains Across hints.
+	private String phantomJSpath = "/home/hamza/Dropbox/Courses/Semester 6/CS461/Project/eclipse/phantomjs-2.1.1-linux-x86_64/bin/phantomjs";
+	private GridBlock grid[][];
 
 	/**
 	 * Launch the application.
@@ -51,6 +46,7 @@ public class AppWindow {
 	 */
 	public AppWindow() {
 		hints = null;
+		grid  = null;
 		initialize();
 	}
 
@@ -107,12 +103,12 @@ public class AppWindow {
 	public void test()
 	{
 		System.out.println("\nGrid Config: ");
-		boolean[][] gridConfig = getGridConfig();
+		GridBlock[][] gridConfig = getGridConfig();
 		for(int i = 0; i < 5; i++)
 		{
 			for(int j = 0; j < 5; j++)
 			{
-				System.out.print(gridConfig[i][j] + "  ");
+				System.out.print(gridConfig[i][j].getValid() + "  ");
 			}
 			System.out.println();
 		}
@@ -123,9 +119,9 @@ public class AppWindow {
 			System.out.println(hintsData[i].getValue() + ": " + hintsData[i].getText() + '\n');
 	}
 
-	public boolean[][] getGridConfig()
+	public GridBlock[][] getGridConfig()
 	{
-		return gridGUI.getGridConfig();
+		return grid;
 	}
 
 	public Hint[] getHints()
@@ -136,82 +132,63 @@ public class AppWindow {
 	public void getNYT()
 	{
 		// Parse the HTML
-		String URL = "https://www.nytimes.com/crosswords/game/mini";
+		DesiredCapabilities caps = new DesiredCapabilities();
+		caps.setJavascriptEnabled(true);                
+//		caps.setCapability("takesScreenshot", true);  
+		caps.setCapability( PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomJSpath);
+		WebDriver driver = new  PhantomJSDriver(caps);
 
-		Document doc = null;
-		try {
-			doc = Jsoup.connect(URL).get();
-		} catch (IOException e) {
-			System.out.println("URL Connection Failed!");
-		}
+		driver.get("https://www.nytimes.com/crosswords/game/mini");	
 
 		// Forming the hints
-		Elements clueList = doc.getElementsByClass("clue-list");
+		List<WebElement> clueList = driver.findElements(By.xpath(".//*[@id='puzzle-container']/div[2]/div/ol/li"));
 		int hintsCount = 5;
 		if(hints == null)
 			hints = new Hint[10];
 
-		for (Element element : clueList) 
-		{
-			Elements subClueList = element.getAllElements();
-
-			for(Element subElement : subClueList)
-			{		            	
-				if(subElement.val() != "")
-				{
-					hints[hintsCount] = new Hint(subElement.val(), subElement.text());
-					hintsCount++;
-					if(hintsCount > 9)
-						hintsCount = 0;
-				}
+		for (WebElement element : clueList) 
+		{         	
+			if(element.getText() != "")
+			{
+				hints[hintsCount] = new Hint(element.getAttribute("value"), element.getText());
+				hintsCount++;
+				if(hintsCount > 9)
+					hintsCount = 0;
 			}
+
 		}
 		hintsGUI.setHints(hints);	// update GUI with NYT hints
 
-		// Testing hints on console
-		//		for(int i = 0;i< hints.length;i++)
-		//		{
-		//			System.out.println(hints[i].getValue() + ": " + hints[i].getText());
-		//		}
+		// Forming the Grid				
+		List<WebElement> gridConfigNYT = driver.findElements(By.xpath(".//*[@id='clue-bar-and-grid-container']/figure/div/div/div"));
 
-		// Forming the Grid
-		System.out.println("grid forming start");
-		boolean gridConfig[][] = new boolean[5][5];
-		Elements gridConfigNYT = doc.getElementsByClass("flex-cell ");
-		
-//		Elements test = gridConfigNYT.get(1).children();
-//		System.out.println(test.size());
-		
+		if (grid == null)
+			grid = new GridBlock[5][5];		
+
 		int countGridNYT = 0;
 		for(int i = 0; i < 5; i++)
-		{
+		{			
 			for(int j = 0; j < 5; j++)
-			{
-				Element flexCell = gridConfigNYT.get(countGridNYT); // Getting flex-cell
+			{	
+				GridBlock block = new GridBlock();
 
-				// Checking grid color
-				if(flexCell.className().contains("black"))
-					gridConfig[i][j] = false;
+				WebElement flexCell = gridConfigNYT.get(countGridNYT); // Getting flex-cell					
+
+				// Getting grid color
+				if(flexCell.getAttribute("class").contains("black"))
+					block.setValid(false);
 				else
-					gridConfig[i][j] = true;
+					block.setValid(true);
 
-				// Checking if contains clue number
-				Elements clueNo = flexCell.getElementsByClass("clue-number");
-												
-//				Elements test = flexCell.children();
-//				System.out.println(test.size());
-				
-				if(clueNo.size() > 0)
-				{
-					System.out.println(countGridNYT + ": clue-number found");
-				}				
+				// Getting clue number
+				block.setClueNo(flexCell.getText());
 
+				grid[i][j] = block;
 				countGridNYT++;
 			}
 		}
-		gridGUI.setGridConfig(gridConfig);
-		System.out.println("grid forming end");
-		//		Elements test = doc.getElementsByClass("flex-table");
-		//		System.out.println(test.toString());
+		gridGUI.setGridConfig(grid);
+
+		driver.quit();
 	}
 }

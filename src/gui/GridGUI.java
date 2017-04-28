@@ -29,19 +29,19 @@ public class GridGUI extends JInternalFrame {
 			for (int j = 0; j < 5; j++)
 			{
 				GridBlock block = new GridBlock();
-				getContentPane().add(block);
 				grid[i][j] = block;
 			}
 		}
-		grid[0][0].setName("1");
-		grid[0][1].setName("2");
-		grid[0][2].setName("3");
-		grid[0][3].setName("4");
-		grid[0][4].setName("5");
-		grid[1][0].setName("6");
-		grid[2][0].setName("7");
-		grid[3][0].setName("8");
-		grid[4][0].setName("9");
+		grid[0][0].setClueNo("1");
+		grid[0][1].setClueNo("2");
+		grid[0][2].setClueNo("3");
+		grid[0][3].setClueNo("4");
+		grid[0][4].setClueNo("5");
+		grid[1][0].setClueNo("6");
+		grid[2][0].setClueNo("7");
+		grid[3][0].setClueNo("8");
+		grid[4][0].setClueNo("9");
+		updateContentPane();
 	}
 	
 	// Methods
@@ -66,15 +66,24 @@ public class GridGUI extends JInternalFrame {
 		return gridConfig;
 	}
 	
-	public void setGridConfig(boolean[][] gridConfig)
+	public void setGridConfig(GridBlock[][] gridConfig)
+	{		
+		grid = gridConfig;
+		updateContentPane();
+	}
+	
+	private void updateContentPane()
 	{
+		this.getContentPane().removeAll();
+		
 		for(int i = 0; i < 5; i++)
 		{
 			for(int j = 0; j < 5; j++)
 			{
-				boolean value = gridConfig[i][j];
-				grid[i][j].setValid(value);
+				getContentPane().add(grid[i][j]);
 			}
 		}
+		
+		repaint();
 	}
 }

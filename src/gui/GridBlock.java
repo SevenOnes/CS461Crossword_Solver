@@ -7,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.FlowLayout;
 import javax.swing.JLabel;
 
 public class GridBlock extends JPanel {
@@ -30,20 +29,26 @@ public class GridBlock extends JPanel {
 		});
 		setBorder(new LineBorder(new Color(0, 0, 0)));
 		setLayout(null);
-		
+
 		JLabel label = new JLabel("");
 		label.setBounds(12, 12, 70, 15);
 		add(label);
 		name = label;
 		valid = true;		
 	}
-	
+
 	// Methods
-	public void setName(String name)
+	public void setClueNo(String name)
 	{
 		this.name.setText(name);	
+		//		repaint();
 	}
 	
+	public String getClueNo()
+	{
+		return name.getText();
+	}
+
 	public void setValid(boolean value)
 	{
 		valid = value;
@@ -54,12 +59,12 @@ public class GridBlock extends JPanel {
 	{
 		return valid;
 	}
-	
+
 	@Override
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		
+
 		if (valid)
 			this.setBackground(Color.WHITE);
 		else

@@ -6,8 +6,6 @@ import java.awt.GridLayout;
 import javax.swing.JTextPane;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class HintsGUI extends JPanel {
 	// Properties
