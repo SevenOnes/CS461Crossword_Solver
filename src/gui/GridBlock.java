@@ -14,7 +14,10 @@ public class GridBlock extends JPanel {
 	// Properties
 	private boolean valid;
 	private JLabel  name;
-
+	private String alpha;
+	private char   value;
+	private boolean solved;
+	
 	// Constructor
 	public GridBlock(){
 		addMouseListener(new MouseAdapter() {
@@ -34,13 +37,26 @@ public class GridBlock extends JPanel {
 		label.setBounds(12, 12, 70, 15);
 		add(label);
 		name = label;
-		valid = true;		
+		valid = true;	
+		alpha = "";
+		solved = false;
 	}
 
 	// Methods
-	public void setClueNo(String name)
+	public void setSolved(boolean value)
 	{
-		this.name.setText(name);	
+		solved = value;
+	}
+	
+	public boolean getSolved()
+	{
+		return solved;
+	}
+	
+	public void setClueNo(char name)
+	{
+		String s = "" + name;
+		this.name.setText(s);	
 		//		repaint();
 	}
 	
@@ -58,6 +74,30 @@ public class GridBlock extends JPanel {
 	public boolean getValid()
 	{
 		return valid;
+	}
+	
+	public void setAlpha(char value)
+	{
+		String s = "" + value;
+		alpha = s;
+	}
+	
+	public String getAlpha()
+	{
+		return alpha;
+	}
+	
+	public void setValue(char value)
+	{
+		this.value = value;
+		String h = name.getText() + " " + value;
+		this.name.setText(h);
+	}
+	
+	public String getValue()
+	{
+		String s = "" + value;
+		return s;				
 	}
 
 	@Override

@@ -9,11 +9,18 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import java.awt.event.ActionEvent;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import Solver.Scrapper;
+import Solver.Searcher;
 
 public class AppWindow {
 
@@ -38,7 +45,7 @@ public class AppWindow {
 					e.printStackTrace();
 				}
 			}
-		});
+		});	
 	}
 
 	/**
@@ -100,23 +107,36 @@ public class AppWindow {
 	}
 
 	// Methods
+	public void setVisible(boolean value)
+	{
+		frame.setVisible(value);
+	}
+
+	// Run Button Pressed 
 	public void test()
 	{
-		System.out.println("\nGrid Config: ");
-		GridBlock[][] gridConfig = getGridConfig();
-		for(int i = 0; i < 5; i++)
-		{
-			for(int j = 0; j < 5; j++)
-			{
-				System.out.print(gridConfig[i][j].getValid() + "  ");
-			}
-			System.out.println();
-		}
+		//		System.out.println("\nGrid Config: ");
+		//		for(int i = 0; i < 5; i++)
+		//		{
+		//			for(int j = 0; j < 5; j++)
+		//			{
+		//				System.out.print(grid[i][j].getValid() + "  ");
+		//			}
+		//			System.out.println();
+		//		}
 
-		System.out.println("\nHints: ");
-		Hint[] hintsData = getHints();
-		for(int i = 0; i < hintsData.length; i++)
-			System.out.println(hintsData[i].getValue() + ": " + hintsData[i].getText() + '\n');
+		//		System.out.println("\nHints: ");
+		//		for(int i = 0; i < hints.length; i++)
+		//			System.out.println(hints[i].getValue() + ": " + hints[i].getText() + '\n');
+
+		// Instantiate and Run Scrapper
+		Scrapper scrapper = new Scrapper(hints);
+		scrapper.scrap();	
+
+		// Instantiate and Run Searcher
+		Searcher searcher = new Searcher(hints, grid);
+		searcher.refine();
+		searcher.search();
 	}
 
 	public GridBlock[][] getGridConfig()
@@ -131,14 +151,46 @@ public class AppWindow {
 
 	public void getNYT()
 	{
+		System.out.println("Getting Today's Puzzle from NYT!");
 		// Parse the HTML
 		DesiredCapabilities caps = new DesiredCapabilities();
 		caps.setJavascriptEnabled(true);                
-//		caps.setCapability("takesScreenshot", true);  
+		//		caps.setCapability("takesScreenshot", true);  
 		caps.setCapability( PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomJSpath);
 		WebDriver driver = new  PhantomJSDriver(caps);
-
+		driver.manage().window().setSize(new Dimension(1280, 1024));
 		driver.get("https://www.nytimes.com/crosswords/game/mini");	
+
+		// Clear the puzzle and timer
+		(new WebDriverWait(driver, 10)).until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[1]/button")));
+		driver.findElement(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[1]/button")).click();
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[1]/ul/li[4]/span")));
+		driver.findElement(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[1]/ul/li[4]/span")).click();
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='modals-container']/div[4]/div/div[2]/button[2]")));
+		driver.findElement(By.xpath(".//*[@id='modals-container']/div[4]/div/div[2]/button[2]")).click();
+
+
+
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[2]/button")));
+		driver.findElement(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[2]/button")).click();
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[2]/ul/li[3]/span")));
+		driver.findElement(By.xpath(".//*[@id='puzzle-toolbar']/div/div[5]/div[2]/ul/li[3]/span")).click();
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='modals-container']/div[4]/div/div[2]/button[2]")));
+		driver.findElement(By.xpath(".//*[@id='modals-container']/div[4]/div/div[2]/button[2]")).click();
+
+		(new WebDriverWait(driver, 10))
+		.until(ExpectedConditions.presenceOfElementLocated(By.xpath(".//*[@id='puzzle-container']/div[2]/div/ol/li")));
+
 
 		// Forming the hints
 		List<WebElement> clueList = driver.findElements(By.xpath(".//*[@id='puzzle-container']/div[2]/div/ol/li"));
@@ -150,6 +202,8 @@ public class AppWindow {
 		{         	
 			if(element.getText() != "")
 			{
+
+				//				System.out.println(element.toString());
 				hints[hintsCount] = new Hint(element.getAttribute("value"), element.getText());
 				hintsCount++;
 				if(hintsCount > 9)
@@ -180,8 +234,26 @@ public class AppWindow {
 				else
 					block.setValid(true);
 
-				// Getting clue number
-				block.setClueNo(flexCell.getText());
+				// Getting clue number				
+				String text = flexCell.getText();
+				//				block.setClueNo(text);
+				//				System.out.print(text);
+				//				System.out.println(" of size " + text.length());
+				if(text.length() > 1)
+				{
+//					System.out.println(text.length());
+					char c = flexCell.getText().charAt(0);
+					//					System.out.println(c);
+					block.setClueNo(c);
+					
+					char a = flexCell.getText().charAt(2);
+					block.setAlpha(a);
+				}
+				if(text.length() == 1)
+				{
+					char a = flexCell.getText().charAt(0);
+					block.setAlpha(a);
+				}
 
 				grid[i][j] = block;
 				countGridNYT++;

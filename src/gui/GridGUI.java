@@ -32,15 +32,15 @@ public class GridGUI extends JInternalFrame {
 				grid[i][j] = block;
 			}
 		}
-		grid[0][0].setClueNo("1");
-		grid[0][1].setClueNo("2");
-		grid[0][2].setClueNo("3");
-		grid[0][3].setClueNo("4");
-		grid[0][4].setClueNo("5");
-		grid[1][0].setClueNo("6");
-		grid[2][0].setClueNo("7");
-		grid[3][0].setClueNo("8");
-		grid[4][0].setClueNo("9");
+		grid[0][0].setClueNo('1');
+		grid[0][1].setClueNo('2');
+		grid[0][2].setClueNo('3');
+		grid[0][3].setClueNo('4');
+		grid[0][4].setClueNo('5');
+		grid[1][0].setClueNo('6');
+		grid[2][0].setClueNo('7');
+		grid[3][0].setClueNo('8');
+		grid[4][0].setClueNo('9');
 		updateContentPane();
 	}
 	
